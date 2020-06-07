@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="GLSL">
+      <UniqueIdentifier>{8f736bf3-a5ce-4c1c-adae-d84f2a8bb192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OFF">
+      <UniqueIdentifier>{a8f47996-d670-4d77-b5ad-d77eda1195f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{e26bcef1-8e7f-4cea-849e-4ac4cbdabffa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Texturas">
+      <UniqueIdentifier>{a0216b7d-b928-488c-a68d-157a20ded7e2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="jsoncpp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OFF\avion.off">
+      <Filter>OFF</Filter>
+    </None>
+    <None Include="OFF\helice.off">
+      <Filter>OFF</Filter>
+    </None>
+    <None Include="OFF\cubo.off">
+      <Filter>OFF</Filter>
+    </None>
+    <None Include="OFF\esfera.off">
+      <Filter>OFF</Filter>
+    </None>
+    <None Include="GLSL\shaderDeFragmento.fs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="GLSL\shaderDeVertice.vs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="OFF\cubo2.off">
+      <Filter>OFF</Filter>
+    </None>
+    <None Include="Config\Cubo.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="Config\Cubo2.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="Config\Test.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="OFF\cuadrado.off">
+      <Filter>OFF</Filter>
+    </None>
+    <None Include="OFF\cuadrado2.off">
+      <Filter>OFF</Filter>
+    </None>
+    <None Include="OFF\triangulo.off">
+      <Filter>OFF</Filter>
+    </None>
+    <None Include="Config\VueltaMundo.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="GLSL\Luz.fs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="GLSL\Luz.vs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="GLSL\Objeto.fs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="GLSL\Objeto.vs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="Config\Iluminacion.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="GLSL\ObjetoMateriales.fs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="OFF\cuboNormalesTexturas.off">
+      <Filter>OFF</Filter>
+    </None>
+    <None Include="Config\IluminacionMateriales.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="GLSL\ObjetoIluminacionTextura.fs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="GLSL\ObjetoIluminacionTextura.vs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="Config\IluminacionTextura.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="GLSL\ObjetoIluminaciones.fs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="Config\Iluminaciones.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="GLSL\ObjetoIluminaciones.vs">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="Config\IluminacionDireccionada.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="Config\IluminacionPuntual.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="Config\IluminacionSpot.json">
+      <Filter>Config</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Graficos.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Texturas\ContainerMadera.png">
+      <Filter>Texturas</Filter>
+    </Image>
+    <Image Include="Texturas\ContainerMadera_Especular.png">
+      <Filter>Texturas</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

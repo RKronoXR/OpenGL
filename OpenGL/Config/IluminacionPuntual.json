@@ -1,0 +1,102 @@
+{
+  "Objetos": [
+    {
+      "Nombre": "Luz",
+      "Archivo": "OFF/cuboNormalesTexturas.off",
+      "Luz": true,
+      "Tipo": "Puntual",
+      "DetalleLuz": {
+        "DistAtenuacion": 50,
+        "Color": {
+          "Ambiente": {
+            "r": 0.5,
+            "g": 0.5,
+            "b": 0.5
+          },
+          "Especular": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0
+          },
+          "Difuso": {
+            "r": 0.8,
+            "g": 0.8,
+            "b": 0.8
+          }
+        }
+      },
+      "Atributos": {
+        "0": {
+          "Nombre": "Posicion",
+          "Cantidad": 3
+        },
+        "1": {
+          "Nombre": "Normal",
+          "Cantidad": 3
+        },
+        "2": {
+          "Nombre": "TexturaCoordenadas",
+          "Cantidad": 2
+        }
+      },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/Luz.vs",
+          "Shader de Fragmento": "GLSL/Luz.fs",
+          "Uniformes": [
+            {
+              "nombre": "color",
+              "valor": {
+                "r": 1,
+                "g": 1,
+                "b": 1
+              }
+            }
+          ],
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0.7,
+              "y": 0.2,
+              "z": 2.0
+            },
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 0.2,
+              "y": 0.2,
+              "z": 0.2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Nombre": "Objeto",
+      "Archivo": "OFF/cuboNormalesTexturas.off",
+      "Textura2D": "Texturas/ContainerMadera.png",
+      "Textura2D_Especular": "Texturas/ContainerMadera_Especular.png",
+      "Luz": false,
+      "Tipo": "Textura",
+      "Atributos": {
+        "0": {
+          "Nombre": "Posicion",
+          "Cantidad": 3
+        },
+        "1": {
+          "Nombre": "Normal",
+          "Cantidad": 3
+        },
+        "2": {
+          "Nombre": "TexturaCoordenadas",
+          "Cantidad": 2
+        }
+      },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/ObjetoIluminaciones.vs",
+          "Shader de Fragmento": "GLSL/ObjetoIluminaciones.fs",
+        }
+      ]
+    }
+  ]
+}

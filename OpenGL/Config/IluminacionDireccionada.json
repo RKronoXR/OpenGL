@@ -1,0 +1,92 @@
+{
+  "Objetos": [
+    {
+      "Nombre": "Luz",
+      "Archivo": "OFF/triangulo.off",
+      "Luz": true,
+      "Tipo": "Direccionada",
+      "DetalleLuz": {
+        "Direccion": {
+          "x": 2,
+          "y": 2,
+          "z": -2
+        },
+        "Color": {
+          "Ambiente": {
+            "r": 0.2,
+            "g": 0.2,
+            "b": 0.2
+          },
+          "Especular": {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          },
+          "Difuso": {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "Atributos": {
+        "0": {
+          "Nombre": "Posicion",
+          "Cantidad": 3
+        }
+      },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/Luz.vs",
+          "Shader de Fragmento": "GLSL/Luz.fs",
+          "Uniformes": [
+            {
+              "nombre": "color",
+              "valor": {
+                "r": 1,
+                "g": 1,
+                "b": 1
+              }
+            }
+          ],
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 0.1,
+              "y": 0.1,
+              "z": 0.1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Nombre": "Objeto",
+      "Archivo": "OFF/cuboNormalesTexturas.off",
+      "Textura2D": "Texturas/ContainerMadera.png",
+      "Textura2D_Especular": "Texturas/ContainerMadera_Especular.png",
+      "Luz": false,
+      "Tipo": "Textura",
+      "Atributos": {
+        "0": {
+          "Nombre": "Posicion",
+          "Cantidad": 3
+        },
+        "1": {
+          "Nombre": "Normal",
+          "Cantidad": 3
+        },
+        "2": {
+          "Nombre": "TexturaCoordenadas",
+          "Cantidad": 2
+        }
+      },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/ObjetoIluminaciones.vs",
+          "Shader de Fragmento": "GLSL/ObjetoIluminaciones.fs"
+        }
+      ]
+    }
+  ]
+}

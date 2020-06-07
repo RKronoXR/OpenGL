@@ -1,0 +1,156 @@
+{
+  "Objetos": [
+    {
+      "Nombre": "Esfera",
+      "Archivo": "OFF/esfera.off",
+      "Atributos": { "0": { "Nombre": "Posicion", "Cantidad": 3 } },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs",
+          "Uniformes": [
+            {
+              "nombre": "color",
+              "valor": {
+                "r": 0,
+                "g": 0,
+                "b": 1
+              }
+            }
+          ],
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 5.0,
+              "y": 5.0,
+              "z": 5.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Nombre": "Avion",
+      "Archivo": "OFF/avion.off",
+      "Atributos": { "0": { "Nombre": "Posicion", "Cantidad": 3 } },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs",
+          "Uniformes": [
+            {
+              "nombre": "color",
+              "valor": {
+                "r": 0,
+                "g": 1,
+                "b": 0
+              }
+            }
+          ],
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 0.5,
+              "y": 0.5,
+              "z": 0.5
+            },
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 0.0,
+              "y": 1.0,
+              "z": 0.0,
+              "angulo": 1.0
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 18.0,
+              "y": 0.0,
+              "z": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Nombre": "Helice",
+      "Archivo": "OFF/helice.off",
+      "Atributos": { "0": { "Nombre": "Posicion", "Cantidad": 3 } },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs",
+          "Uniformes": [
+            {
+              "nombre": "color",
+              "valor": {
+                "r": 1,
+                "g": 0,
+                "b": 0
+              }
+            }
+          ],
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 0.5,
+              "y": 0.5,
+              "z": 0.5
+            },
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 0.0,
+              "y": 1.0,
+              "z": 0.0,
+              "angulo": 1.0
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 22.0,
+              "y": -0.5,
+              "z": 1.75
+            },
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.0,
+              "angulo": 10.0
+            }
+          ]
+        },
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 0.5,
+              "y": 0.5,
+              "z": 0.5
+            },
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 0.0,
+              "y": 1.0,
+              "z": 0.0,
+              "angulo": 1.0
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 14.0,
+              "y": -0.5,
+              "z": 1.75
+            },
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.0,
+              "angulo": 10.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

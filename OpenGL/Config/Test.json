@@ -1,0 +1,108 @@
+{
+  "Objetos": [
+    {
+      "Nombre": "Triangulo",
+      "Archivo": "OFF/triangulo.off",
+      "Atributos": {
+        "0": {
+          "Nombre": "Posicion",
+          "Cantidad": 3
+        }
+      },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs"
+        }
+      ]
+    },
+    {
+      "Nombre": "Cuadrado",
+      "Archivo": "OFF/cuadrado.off",
+      "Atributos": {
+        "0": {
+          "Nombre": "Posicion",
+          "Cantidad": 3
+        }
+      },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 0,
+              "y": 4,
+              "z": 0,
+              "angulo": 2
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": 0,
+              "z": 4
+            }
+          ]
+        },
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 0,
+              "y": 0,
+              "z": 4,
+              "angulo": 2
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": 4,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 4,
+              "y": 0,
+              "z": 0,
+              "angulo": 2
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": 0,
+              "z": 4
+            }
+          ]
+        },
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 4,
+              "y": 0,
+              "z": 0,
+              "angulo": -2
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": 0,
+              "z": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

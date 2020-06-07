@@ -1,0 +1,36 @@
+{
+  "Objetos": 
+  [
+    {
+      "Nombre": "Cubo",
+      "Archivo": "OFF/cubo2.off",
+      "Atributos": 
+      {
+        "0": 
+        {
+          "Nombre": "Posicion",
+          "Cantidad": 3
+        },
+        "1": 
+        {
+          "Nombre": "Normal",
+          "Cantidad": 3
+        }
+      },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/shaderDeVertice.vs",
+          "Shader de Fragmento": "GLSL/shaderDeFragmento.fs",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

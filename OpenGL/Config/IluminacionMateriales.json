@@ -1,0 +1,158 @@
+{
+  "Objetos": [
+    {
+      "Nombre": "Luz",
+      "Archivo": "OFF/cubo.off",
+      "Luz": true,
+      "Atributos": {
+        "0": {
+          "Nombre": "Posicion",
+          "Cantidad": 3
+        }
+      },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/Luz.vs",
+          "Shader de Fragmento": "GLSL/Luz.fs",
+          "Uniformes": [
+            {
+              "nombre": "color",
+              "valor": {
+                "r": 1,
+                "g": 1,
+                "b": 1
+              }
+            }
+          ],
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 2.5,
+              "y": 2.5,
+              "z": 2.5
+            },
+            {
+              "TransGeometrica": "Rotacion",
+              "x": 0,
+              "y": 1,
+              "z": 0,
+              "angulo": 1.5
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": 0,
+              "z": 2.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Nombre": "Objeto",
+      "Archivo": "OFF/cubo2.off",
+      "Luz": false,
+      "Atributos": {
+        "0": {
+          "Nombre": "Posicion",
+          "Cantidad": 3
+        },
+        "1": {
+          "Nombre": "Normal",
+          "Cantidad": 3
+        }
+      },
+      "Modelos": [
+        {
+          "Shader de Vertice": "GLSL/Objeto.vs",
+          "Shader de Fragmento": "GLSL/ObjetoMateriales.fs",
+          "Material": "Esmeralda",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 5,
+              "y": 5,
+              "z": 5
+            }
+          ]
+        },
+        {
+          "Shader de Vertice": "GLSL/Objeto.vs",
+          "Shader de Fragmento": "GLSL/ObjetoMateriales.fs",
+          "Material": "Oro",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 5,
+              "y": 5,
+              "z": 5
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": 0,
+              "z": -2.5
+            }
+          ]
+        },
+        {
+          "Shader de Vertice": "GLSL/Objeto.vs",
+          "Shader de Fragmento": "GLSL/ObjetoMateriales.fs",
+          "Material": "Plata",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 5,
+              "y": 5,
+              "z": 5
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": -2.5,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "Shader de Vertice": "GLSL/Objeto.vs",
+          "Shader de Fragmento": "GLSL/ObjetoMateriales.fs",
+          "Material": "Jade",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 5,
+              "y": 5,
+              "z": 5
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": 0,
+              "z": 2.5
+            }
+          ]
+        },
+        {
+          "Shader de Vertice": "GLSL/Objeto.vs",
+          "Shader de Fragmento": "GLSL/ObjetoMateriales.fs",
+          "Material": "Rubí",
+          "Transformaciones": [
+            {
+              "TransGeometrica": "Escalamiento",
+              "x": 5,
+              "y": 5,
+              "z": 5
+            },
+            {
+              "TransGeometrica": "Traslacion",
+              "x": 0,
+              "y": 2.5,
+              "z": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
