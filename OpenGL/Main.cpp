@@ -6,6 +6,6 @@ using namespace std;
 
 int main() {
 	setlocale(LC_ALL, "es");
-	ComputacionGrafica::controlador.inicializar("Computacion Grafica", "Config/Iluminaciones.json");
+	ComputacionGrafica::controlador.inicializar("Computacion Grafica", "Config/OFFyOBJ.json");
 	return 0;
 }

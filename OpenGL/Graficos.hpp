@@ -454,6 +454,7 @@ namespace ComputacionGrafica {
 		}
 	private:
 		void setMVP(mat4 &vista, mat4 &proyeccion) {
+			this->progShaders->usar();
 			this->progShaders->setMat4("modelo", this->calcularModelo());
 			this->progShaders->setMat4("vista", vista);
 			this->progShaders->setMat4("proyeccion", proyeccion);
@@ -474,28 +475,42 @@ namespace ComputacionGrafica {
 			return modelo;
 		}
 	};
+	
 	class CGrafico {
+	protected:
+		string nombre, nombreArchivo, formato;
+		bool emisorLuz;
+	public:
+		CGrafico(string nombre, const string nombreArchivo, bool emisorLuz, string formato) {
+			this->nombre = nombre;
+			this->nombreArchivo = nombreArchivo.c_str();
+			this->emisorLuz = emisorLuz;
+			this->formato = formato;
+		}
+		vector<CModelado*> modelados;
+		bool esEmisorLuz() { return this->emisorLuz; }
+		virtual void dibujar(CRenderizador* renderizador, mat4 vista, mat4 proyeccion) {}
+		string getFormato() { return this->formato; }
+		// inicializarTextura
+	};
+
+	class CGraficoOOF : public CGrafico {
 	protected:
 		typedef struct { string nombre; short cantidad; } datosAtributo;
 		typedef pair<short, datosAtributo> atributo;
 		typedef unordered_map<short, datosAtributo> dicAtributos;
 		unsigned int nVertices, nTriangulos;
-		string nombre, nombreArchivo;
-		bool emisorLuz;
 		short numPorVertice;
 		dicAtributos atributos;
 		GLuint idBufferVertices, idBufferIndices, idTextura, idTexturaEspecular;
 		GLfloat* vertices;
 		GLuint* indices;
 	public:
-		vector<CModelado*> modelados;
-		CGrafico(string nombre, string nombreArchivo, bool emisorLuz) {
-			this->nombre = nombre;
-			this->nombreArchivo = nombreArchivo.c_str();
-			this->emisorLuz = emisorLuz;
+		CGraficoOOF(string nombre, const string nombreArchivo, bool emisorLuz)
+			: CGrafico(nombre, nombreArchivo, emisorLuz, "OFF") {
 			this->numPorVertice = 0;
 		}
-		~CGrafico() {
+		~CGraficoOOF() {
 			delete this->vertices, this->indices;
 			glDeleteBuffers(1, &this->idBufferVertices);
 			if (this->nTriangulos)
@@ -529,7 +544,6 @@ namespace ComputacionGrafica {
 			this->inicializarTextura(renderizador, archivoTextura, "material.difuso", this->idTextura);
 			this->inicializarTextura(renderizador, archivoTexturaEspecular, "material.especular", this->idTexturaEspecular);
 		}
-		bool esEmisorLuz() { return this->emisorLuz; }
 	protected:
 		void cargarSuperficie(CRenderizador* renderizador) {
 			ifstream archivo(nombreArchivo, ifstream::in);
@@ -583,13 +597,13 @@ namespace ComputacionGrafica {
 			}
 		}
 	};
-	class CGraficoLuz : public CGrafico {
+	class CGraficoLuz : public CGraficoOOF {
 	protected:
 		string tipo;
 		ColorLuz color;
 	public:
 		CGraficoLuz(string nombre, string nombreArchivo, string tipo, ColorLuz color)
-			: CGrafico(nombre, nombreArchivo, true) {
+			: CGraficoOOF(nombre, nombreArchivo, true) {
 			this->tipo = tipo;
 			this->color = color;
 		}
@@ -649,10 +663,10 @@ namespace ComputacionGrafica {
 			}
 		}
 	};
-	class CGraficoObjeto : public CGrafico {
+	class CGraficoObjeto : public CGraficoOOF {
 	public:
 		CGraficoObjeto(string nombre, string nombreArchivo)
-			: CGrafico(nombre, nombreArchivo, false) {}
+			: CGraficoOOF(nombre, nombreArchivo, false) {}
 		void dibujar(CRenderizador* renderizador, mat4 &vista, mat4 &proyeccion, vec3 posVista, vector<InfoLuz*> &infoLuces) {
 			for (CModelado* modelado : modelados) {
 				modelado->enviarDatosShader(vista, proyeccion);
@@ -722,6 +736,230 @@ namespace ComputacionGrafica {
 			modelado->progShaders->setFloat("material.brillo", 32.0f);
 		}
 	};
+
+	class CSuperficieOBJ {
+		struct Vertice {
+			vec3 posicion;
+			vec3 normal;
+			vec2 coordTextura;
+			vec3 tangente;
+			vec3 bitangente;
+		};
+		struct Textura {
+			unsigned int id;
+			string tipo;
+			string ruta;
+		};
+		unsigned int idBufferVertices, idBufferIndices;
+	public:
+		vector<Vertice>      vertices;
+		vector<unsigned int> indices;
+		vector<Textura>      texturas;
+		unsigned int idArregloDeObjetosVertices;
+		CSuperficieOBJ(const aiScene* aiModelo, aiMesh* aiSuperficie, string directorio)
+		{
+			procesarAiSuperficie(aiModelo, aiSuperficie, directorio);
+			inicializarBuffersAtributos();
+		}
+		void dibujar()
+		{
+			unsigned int iAmbiente, iDifuso, iEspecular, iNormal, i;
+			iAmbiente = iDifuso = iEspecular = iNormal = i = 0;
+			for (Textura textura : texturas)
+			{
+				glActiveTexture(GL_TEXTURE0 + i++);
+				string num;
+				if (textura.tipo == "textura_ambiente") num = to_string(++iAmbiente);
+				else if (textura.tipo == "textura_difusa") num = to_string(++iDifuso);
+				else if (textura.tipo == "textura_especular") num = to_string(++iEspecular);
+				else if (textura.tipo == "textura_normal") num = to_string(++iNormal);
+				glBindTexture(GL_TEXTURE_2D, textura.id);
+			}
+			glBindVertexArray(idArregloDeObjetosVertices);
+			glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+		}
+	private:
+		void procesarAiSuperficie(const aiScene* aiModelo, aiMesh* aiSuperficie, string directorio) {
+			// Definiendo lambdas para facilitar el proceso de copia de aiVector3D a vectores glm
+			auto copiarVector2D = [](vec2 &vector, aiVector3D &vec_assimp, bool existe) {
+				vector.x = existe ? vec_assimp.x : 0;
+				vector.y = existe ? vec_assimp.y : 0;
+			};
+			auto copiarVector3D = [](vec3 &vector, aiVector3D &vec_assimp) {
+				vector.x = vec_assimp.x;
+				vector.y = vec_assimp.y;
+				vector.z = vec_assimp.z;
+			};
+			// Copiando los vértices: posiciones, normales, coordenadas de texturas, tangentes y bitangentes por cada vértice
+			for (unsigned int i = 0; i < aiSuperficie->mNumVertices; ++i)
+			{
+				Vertice vertex;
+				copiarVector3D(vertex.posicion, aiSuperficie->mVertices[i]);
+				copiarVector3D(vertex.normal, aiSuperficie->mNormals[i]);
+				copiarVector2D(vertex.coordTextura, aiSuperficie->mTextureCoords[0][i], aiSuperficie->mTextureCoords[0]);
+				copiarVector3D(vertex.tangente, aiSuperficie->mTangents[i]);
+				copiarVector3D(vertex.bitangente, aiSuperficie->mBitangents[i]);
+				this->vertices.push_back(vertex);
+			}
+			// Copiando las caras: índices
+			for (unsigned int i = 0; i < aiSuperficie->mNumFaces; ++i)
+			{
+				aiFace cara = aiSuperficie->mFaces[i];
+				for (unsigned int j = 0; j < cara.mNumIndices; ++j)
+					this->indices.push_back(cara.mIndices[j]);
+			}
+			// Copiando (cargando) las texturas: normales, ambiente, difusa, especular
+			aiMaterial* material = aiModelo->mMaterials[aiSuperficie->mMaterialIndex];
+			auto agregarTexturas = [&](aiTextureType tipoTextura, string nombreTipoTextura) {
+				vector<Textura> texturaEspecifica = cargarTexturasDeMateriales(material, tipoTextura, nombreTipoTextura, directorio);
+				this->texturas.insert(texturas.end(), texturaEspecifica.begin(), texturaEspecifica.end());
+			};
+			agregarTexturas(aiTextureType_HEIGHT, "textura_normal");
+			agregarTexturas(aiTextureType_AMBIENT, "textura_ambiente");
+			agregarTexturas(aiTextureType_DIFFUSE, "textura_difusa");
+			agregarTexturas(aiTextureType_SPECULAR, "textura_especular");
+		}
+		vector<Textura> cargarTexturasDeMateriales(aiMaterial *mat, aiTextureType type, string typeName, string directorio)
+		{
+			vector<Textura> texturas;
+			for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+			{
+				aiString nombreArchivo;
+				mat->GetTexture(type, i, &nombreArchivo);
+				bool fueInicializada = false;
+				for (Textura textura : texturas)
+				{
+					if (textura.ruta == nombreArchivo.C_Str())
+					{
+						texturas.push_back(textura);
+						fueInicializada = true;
+						break;
+					}
+				}
+				if (!fueInicializada)
+				{
+					Textura textura;
+					textura.id = inicializarTextura(directorio + '/' + nombreArchivo.C_Str());
+					textura.tipo = typeName;
+					textura.ruta = nombreArchivo.C_Str();
+					texturas.push_back(textura);
+					texturas.push_back(textura);
+				}
+			}
+			return texturas;
+		}
+		//TODO: Adaptar la función para derivar la mayor parte a CRenderizador::inicializarTextura
+		unsigned int inicializarTextura(string nombreArchivo, bool gamma = false)
+		{
+			unsigned int id;
+			glGenTextures(1, &id);
+
+			int ancho, alto, nroCanales;
+			unsigned char *imgTextura = stbi_load(nombreArchivo.c_str(), &ancho, &alto, &nroCanales, 0);
+			if (imgTextura)
+			{
+				GLenum formato;
+				switch (nroCanales) {
+				case 1: formato = GL_RED; break;
+				case 3: formato = GL_RGB; break;
+				case 4: formato = GL_RGBA; break;
+				}
+
+				glBindTexture(GL_TEXTURE_2D, id);
+				glTexImage2D(GL_TEXTURE_2D, 0, formato, ancho, alto, 0, formato, GL_UNSIGNED_BYTE, imgTextura);
+				glGenerateMipmap(GL_TEXTURE_2D);
+
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+				stbi_image_free(imgTextura);
+			}
+			else
+			{
+				cout << "Error al cargar la textura: " << nombreArchivo << endl;
+				stbi_image_free(imgTextura);
+			}
+
+			return id;
+		}
+		void inicializarBuffersAtributos()
+		{
+			glGenVertexArrays(1, &idArregloDeObjetosVertices);
+			glGenBuffers(1, &idBufferVertices);
+			glGenBuffers(1, &idBufferIndices);
+
+			glBindVertexArray(idArregloDeObjetosVertices);
+
+			glBindBuffer(GL_ARRAY_BUFFER, idBufferVertices);
+			glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertice), &vertices[0], GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idBufferIndices);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)0);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)offsetof(Vertice, normal));
+			glEnableVertexAttribArray(2);
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)offsetof(Vertice, coordTextura));
+			glEnableVertexAttribArray(3);
+			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)offsetof(Vertice, tangente));
+			glEnableVertexAttribArray(4);
+			glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)offsetof(Vertice, bitangente));
+
+			glBindVertexArray(0);
+		}
+	};
+	class CGraficoOBJ : public CGrafico
+	{
+		vector<CSuperficieOBJ> superficies;
+		bool correccionGama;
+	public:
+		CGraficoOBJ(string nombre, const string &nombreArchivo, bool emisorLuz, bool correccionGama = false) 
+			: CGrafico(nombre, nombreArchivo, emisorLuz, "OBJ")
+		{
+			this->correccionGama = correccionGama;
+			this->cargarModelo(nombreArchivo);
+		}
+		void dibujar(CRenderizador* renderizador, mat4 vista, mat4 proyeccion)//TODO: enviar renderizador a CSuperficie para librarla de renderizar
+		{
+			for (CModelado* modelado : this->modelados) {
+				modelado->enviarDatosShader(vista, proyeccion);
+				for (unsigned int i = 0; i < superficies.size(); i++)
+					superficies[i].dibujar();
+			}
+		}
+	private:
+		void cargarModelo(const string &ruta)
+		{
+			Assimp::Importer importador;
+			//Opciones de Postprocesamiento: http://assimp.sourceforge.net/lib_html/postprocess_8h.html
+			const aiScene* modelo = importador.ReadFile(ruta, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes);
+			// verificando si hubieron errores
+			if (!modelo || modelo->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !modelo->mRootNode)
+			{
+				cout << "ERROR::ASSIMP:: " << importador.GetErrorString() << endl;
+				return;
+			}
+			procesarNodo(modelo->mRootNode, modelo, ruta.substr(0, ruta.find_last_of('/')));
+		}
+		void procesarNodo(aiNode* nodo, const aiScene* aiModelo, string directorio)
+		{
+			//Procesamos cada superficie relacionada al nodo actual
+			for (unsigned int i = 0; i < nodo->mNumMeshes; i++)
+			{
+				unsigned int idSuperficieNodo = nodo->mMeshes[i];
+				aiMesh* aiSuperficie = aiModelo->mMeshes[idSuperficieNodo];
+				superficies.push_back(CSuperficieOBJ(aiModelo, aiSuperficie, directorio));
+			}
+			//Continuamos procesando los subnodos del nodo actual
+			for (unsigned int i = 0; i < nodo->mNumChildren; i++)
+				procesarNodo(nodo->mChildren[i], aiModelo, directorio);
+		}
+	};
+
 	//class CGraficoObjetoColor
 	//class CGraficoObjetoTextura
 	class CCamara
@@ -819,7 +1057,7 @@ namespace ComputacionGrafica {
 		}
 		~CControladora() {
 			for (auto objGrafico : dicGraficos) {
-				CGrafico* grafico = (CGrafico*)objGrafico.second;
+				CGraficoOOF* grafico = (CGraficoOOF*)objGrafico.second;
 				if (!grafico->esEmisorLuz()) {
 					CGraficoObjeto* grafObjeto = (CGraficoObjeto*)grafico;
 					delete grafObjeto;
@@ -870,75 +1108,82 @@ namespace ComputacionGrafica {
 			const Value& objetos = raiz["Objetos"];
 			for (const Value& objeto : objetos) {
 				CGrafico* grafico = nullptr;
-				string nombreObjeto, archivoOFF, archivoTextura, archivoTexturaEspecular, tipo;
+				string nombreObjeto, archivoGrafico, archivoTextura, archivoTexturaEspecular, tipo;
 				nombreObjeto = objeto["Nombre"].asString();
-				archivoOFF = objeto["Archivo"].asString();
-				archivoTextura = objeto["Textura2D"].asString();
-				archivoTexturaEspecular = objeto["Textura2D_Especular"].asString();
+				archivoGrafico = objeto["Archivo"].asString();
 				bool luz = objeto["Luz"].asBool();
-				if (luz) {
-					tipo = objeto["Tipo"].asString();
-					const Value& detalleLuz = objeto["DetalleLuz"];
 
-					ColorLuz color;
-					color.ambiente.r = detalleLuz["Color"]["Ambiente"]["r"].asFloat();
-					color.ambiente.g = detalleLuz["Color"]["Ambiente"]["g"].asFloat();
-					color.ambiente.b = detalleLuz["Color"]["Ambiente"]["b"].asFloat();
-					color.especular.r = detalleLuz["Color"]["Especular"]["r"].asFloat();
-					color.especular.g = detalleLuz["Color"]["Especular"]["g"].asFloat();
-					color.especular.b = detalleLuz["Color"]["Especular"]["b"].asFloat();
-					color.difuso.r = detalleLuz["Color"]["Difuso"]["r"].asFloat();
-					color.difuso.g = detalleLuz["Color"]["Difuso"]["g"].asFloat();
-					color.difuso.b = detalleLuz["Color"]["Difuso"]["b"].asFloat();
-
-
-					if (tipo == "Direccionada") {
-						vec3 direccion;
-						direccion.x = detalleLuz["Direccion"]["x"].asFloat();
-						direccion.y = detalleLuz["Direccion"]["y"].asFloat();
-						direccion.z = detalleLuz["Direccion"]["z"].asFloat();
-						grafico = new CGraficoLuzDireccionada(nombreObjeto, archivoOFF, direccion, color);
-					}
-					else if (tipo == "Puntual") {
-						short distancia = (short)detalleLuz["DistAtenuacion"].asInt();
-						grafico = new CGraficoLuzPuntual(nombreObjeto, archivoOFF, this->infoConstantes->getInfoConstAtenuacion(distancia), color);
-					}
-					else if (tipo == "Focal") {
-						short distancia = (short)detalleLuz["DistAtenuacion"].asInt();
-						float anguloInterno = cos(radians(detalleLuz["AnguloInterno"].asFloat()));
-						float anguloExterno = cos(radians(detalleLuz["AnguloExterno"].asFloat()));
-						grafico = new CGraficoLuzFocal(nombreObjeto, archivoOFF, this->infoConstantes->getInfoConstAtenuacion(distancia), anguloInterno, anguloExterno, color);
-					}
-					this->graficosLuz.push_back((CGraficoLuz*)grafico);
+				if (archivoGrafico == "OBJ/zanahoria/zanahoria.obj") {
+					grafico = new CGraficoOBJ(nombreObjeto, archivoGrafico, luz);
 				}
-				else  grafico = new CGraficoObjeto(nombreObjeto, archivoOFF);
-				const Value& atributos = objeto["Atributos"];
-				for (string localizacion : atributos.getMemberNames()) {
-					grafico->setAtributo(stoi(localizacion), atributos[localizacion]["Nombre"].asString(), atributos[localizacion]["Cantidad"].asInt());
+				else {
+					archivoTextura = objeto["Textura2D"].asString();
+					archivoTexturaEspecular = objeto["Textura2D_Especular"].asString();
+					if (luz) {
+						tipo = objeto["Tipo"].asString();
+						const Value& detalleLuz = objeto["DetalleLuz"];
+
+						ColorLuz color;
+						color.ambiente.r = detalleLuz["Color"]["Ambiente"]["r"].asFloat();
+						color.ambiente.g = detalleLuz["Color"]["Ambiente"]["g"].asFloat();
+						color.ambiente.b = detalleLuz["Color"]["Ambiente"]["b"].asFloat();
+						color.especular.r = detalleLuz["Color"]["Especular"]["r"].asFloat();
+						color.especular.g = detalleLuz["Color"]["Especular"]["g"].asFloat();
+						color.especular.b = detalleLuz["Color"]["Especular"]["b"].asFloat();
+						color.difuso.r = detalleLuz["Color"]["Difuso"]["r"].asFloat();
+						color.difuso.g = detalleLuz["Color"]["Difuso"]["g"].asFloat();
+						color.difuso.b = detalleLuz["Color"]["Difuso"]["b"].asFloat();
+
+						if (tipo == "Direccionada") {
+							vec3 direccion;
+							direccion.x = detalleLuz["Direccion"]["x"].asFloat();
+							direccion.y = detalleLuz["Direccion"]["y"].asFloat();
+							direccion.z = detalleLuz["Direccion"]["z"].asFloat();
+							grafico = new CGraficoLuzDireccionada(nombreObjeto, archivoGrafico, direccion, color);
+						}
+						else if (tipo == "Puntual") {
+							short distancia = (short)detalleLuz["DistAtenuacion"].asInt();
+							grafico = new CGraficoLuzPuntual(nombreObjeto, archivoGrafico, this->infoConstantes->getInfoConstAtenuacion(distancia), color);
+						}
+						else if (tipo == "Focal") {
+							short distancia = (short)detalleLuz["DistAtenuacion"].asInt();
+							float anguloInterno = cos(radians(detalleLuz["AnguloInterno"].asFloat()));
+							float anguloExterno = cos(radians(detalleLuz["AnguloExterno"].asFloat()));
+							grafico = new CGraficoLuzFocal(nombreObjeto, archivoGrafico, this->infoConstantes->getInfoConstAtenuacion(distancia), anguloInterno, anguloExterno, color);
+						}
+						this->graficosLuz.push_back((CGraficoLuz*)grafico);
+					}
+					else  grafico = new CGraficoObjeto(nombreObjeto, archivoGrafico);
+					const Value& atributos = objeto["Atributos"];
+					for (string localizacion : atributos.getMemberNames()) {
+						((CGraficoOOF*)grafico)->setAtributo(stoi(localizacion), atributos[localizacion]["Nombre"].asString(), atributos[localizacion]["Cantidad"].asInt());
+					}
+					((CGraficoOOF*)grafico)->inicializar(renderizador, archivoTextura, archivoTexturaEspecular);
 				}
-				grafico->inicializar(renderizador, archivoTextura, archivoTexturaEspecular);
+
 				const Value& modelos = objeto["Modelos"];
-				short indice = 0;
 				for (const Value& modelo : modelos) {
 					CModelado* modelado = new CModelado(nombreObjeto);
 					string fShaderDeVertice = modelo["Shader de Vertice"].asString();
 					string fShaderDeFragmento = modelo["Shader de Fragmento"].asString();
 					modelado->progShaders = new CProgramaShaders(fShaderDeVertice, fShaderDeFragmento);
-					if (!grafico->esEmisorLuz()) {
-						string nombreMaterial = modelo["Material"].asString();
-						modelado->setInfoMaterial(this->infoConstantes->getInfoMaterial(nombreMaterial));
-					}
-					const Value& uniformes = modelo["Uniformes"];
-					for (const Value& uniforme : uniformes) {
-						string nombreVarUniforme = uniforme["nombre"].asString();
-						if (nombreVarUniforme == "color") {
-							float r, g, b;
-							r = uniforme["valor"]["r"].asFloat();
-							g = uniforme["valor"]["g"].asFloat();
-							b = uniforme["valor"]["b"].asFloat();
-							modelado->variablesUniformes[nombreVarUniforme] = new vec3(r, g, b);
+					if (grafico->getFormato() == "OFF") {
+						if (!grafico->esEmisorLuz()) {
+							string nombreMaterial = modelo["Material"].asString();
+							modelado->setInfoMaterial(this->infoConstantes->getInfoMaterial(nombreMaterial));
 						}
-						//AQUI AGREGAR CóDIGO DE OTRAS VARIABLES UNIFORMES
+						const Value& uniformes = modelo["Uniformes"];
+						for (const Value& uniforme : uniformes) {
+							string nombreVarUniforme = uniforme["nombre"].asString();
+							if (nombreVarUniforme == "color") {
+								float r, g, b;
+								r = uniforme["valor"]["r"].asFloat();
+								g = uniforme["valor"]["g"].asFloat();
+								b = uniforme["valor"]["b"].asFloat();
+								modelado->variablesUniformes[nombreVarUniforme] = new vec3(r, g, b);
+							}
+							//AQUI AGREGAR CóDIGO DE OTRAS VARIABLES UNIFORMES
+						}
 					}
 					const Value& transformaciones = modelo["Transformaciones"];
 					for (const Value& transformacion : transformaciones) {
@@ -974,9 +1219,11 @@ namespace ComputacionGrafica {
 			}
 			/******************************************************/
 			for (auto objGrafico : dicGraficos) {
-				CGrafico* grafico = (CGrafico*)objGrafico.second;
-				if (!grafico->esEmisorLuz())
+				CGraficoOOF* grafico = (CGraficoOOF*)objGrafico.second;
+				if (!grafico->esEmisorLuz() && grafico->getFormato() == "OFF")
 					((CGraficoObjeto*)grafico)->dibujar(renderizador, vista, proyeccion, this->camara->getPosicion(), infoLuces);
+				else if (!grafico->esEmisorLuz() && grafico->getFormato() == "OBJ")
+					((CGraficoOBJ*)grafico)->dibujar(renderizador, vista, proyeccion);
 				else grafico->dibujar(renderizador, vista, proyeccion);
 			}
 			for (InfoLuz* infoLuz : infoLuces)

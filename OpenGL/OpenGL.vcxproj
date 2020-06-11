@@ -143,10 +143,11 @@
     <None Include="Config\Iluminacion.json" />
     <None Include="Config\IluminacionDireccionada.json" />
     <None Include="Config\Iluminaciones.json" />
+    <None Include="Config\IluminacionFocal.json" />
     <None Include="Config\IluminacionMateriales.json" />
     <None Include="Config\IluminacionPuntual.json" />
-    <None Include="Config\IluminacionSpot.json" />
     <None Include="Config\IluminacionTextura.json" />
+    <None Include="Config\OFFyOBJ.json" />
     <None Include="Config\Test.json" />
     <None Include="Config\VueltaMundo.json" />
     <None Include="GLSL\Luz.fs" />

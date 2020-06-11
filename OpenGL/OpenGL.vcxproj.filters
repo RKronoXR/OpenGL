@@ -131,7 +131,10 @@
     <None Include="Config\IluminacionPuntual.json">
       <Filter>Config</Filter>
     </None>
-    <None Include="Config\IluminacionSpot.json">
+    <None Include="Config\IluminacionFocal.json">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="Config\OFFyOBJ.json">
       <Filter>Config</Filter>
     </None>
   </ItemGroup>
