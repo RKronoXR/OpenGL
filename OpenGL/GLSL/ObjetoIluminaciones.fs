@@ -37,7 +37,7 @@ struct LuzPuntual {
     ConstAtenuacion constAtenuacion;
 };
 
-struct LuzSpot {
+struct LuzFocal {
     vec3 posicion;
     vec3 direccion;
     ColorLuz color;
@@ -49,12 +49,12 @@ struct LuzSpot {
 uniform vec3 posVista;
 uniform LuzDireccionada luzDireccionada;
 uniform LuzPuntual luzPuntual;
-uniform LuzSpot luzSpot;
+uniform LuzFocal luzFocal;
 uniform Material material;
 
 vec3 calcularReflejoLuzDireccionada(LuzDireccionada luzDireccionada, vec3 normal, vec3 dirVista, vec3 mat_difuso, vec3 mat_especular, float mat_brillo);
 vec3 calcularReflejoLuzPuntual(LuzPuntual luzPuntual, vec3 normal, vec3 posicion, vec3 dirVista, vec3 mat_difuso, vec3 mat_especular, float mat_brillo);
-vec3 calcularReflejoLuzSpot(LuzSpot luzSpot, vec3 normal, vec3 posicion, vec3 dirVista, vec3 mat_difuso, vec3 mat_especular, float mat_brillo);
+vec3 calcularReflejoLuzFocal(LuzFocal luzFocal, vec3 normal, vec3 posicion, vec3 dirVista, vec3 mat_difuso, vec3 mat_especular, float mat_brillo);
 
 void main()
 {
@@ -71,8 +71,8 @@ void main()
     colorReflejado += calcularReflejoLuzDireccionada(luzDireccionada, normal, dirVista, mat_difuso, mat_especular, mat_brillo);
     // Luces Puntuales
     colorReflejado += calcularReflejoLuzPuntual(luzPuntual, normal, Posicion, dirVista, mat_difuso, mat_especular, mat_brillo);
-    // Luz Spot
-    colorReflejado += calcularReflejoLuzSpot(luzSpot, normal, Posicion, dirVista, mat_difuso, mat_especular, mat_brillo);
+    // Luz Focal
+    colorReflejado += calcularReflejoLuzFocal(luzFocal, normal, Posicion, dirVista, mat_difuso, mat_especular, mat_brillo);
     
     oColor = vec4(colorReflejado, 1.0);
 }
@@ -119,29 +119,29 @@ vec3 calcularReflejoLuzPuntual(LuzPuntual luzPuntual, vec3 normal, vec3 posicion
     return (reflejoAmbiente + reflejoDifuso + reflejoEspecular);
 }
 
-vec3 calcularReflejoLuzSpot(LuzSpot luzSpot, vec3 normal, vec3 posicion, vec3 dirVista, vec3 mat_difuso, vec3 mat_especular, float mat_brillo)
+vec3 calcularReflejoLuzFocal(LuzFocal luzFocal, vec3 normal, vec3 posicion, vec3 dirVista, vec3 mat_difuso, vec3 mat_especular, float mat_brillo)
 {
-    vec3 dirLuz = normalize(luzSpot.posicion - posicion);
+    vec3 dirLuz = normalize(luzFocal.posicion - posicion);
     // Atenuacion
     float distancia = length(luzPuntual.posicion - posicion);
     float atenuacion = 1.0 / (luzPuntual.constAtenuacion.constante + 
                      luzPuntual.constAtenuacion.linear * distancia + 
                      luzPuntual.constAtenuacion.cuadratica * (distancia * distancia));
-    // spotlight intensity
-    float cos_alfa = dot(dirLuz, normalize(-luzSpot.direccion)); 
-    float epsilon = luzSpot.anguloInterno - luzSpot.anguloExterno;
-    float intensidad = clamp((cos_alfa - luzSpot.anguloExterno) / epsilon, 0.0, 1.0);
+    // Focallight intensity
+    float cos_alfa = dot(dirLuz, normalize(-luzFocal.direccion)); 
+    float epsilon = luzFocal.anguloInterno - luzFocal.anguloExterno;
+    float intensidad = clamp((cos_alfa - luzFocal.anguloExterno) / epsilon, 0.0, 1.0);
     //Reflejo Ambiente
-    vec3 ilumAmbiente = luzSpot.color.ambiente;
+    vec3 ilumAmbiente = luzFocal.color.ambiente;
     ilumAmbiente *= atenuacion * intensidad;
     vec3 reflejoAmbiente = ilumAmbiente * mat_difuso;
     //Reflejo Difuso
-    vec3 ilumDifusa = luzSpot.color.difuso * max(dot(normal, dirLuz), 0.0);
+    vec3 ilumDifusa = luzFocal.color.difuso * max(dot(normal, dirLuz), 0.0);
     ilumDifusa *= atenuacion * intensidad;
     vec3 reflejoDifuso = ilumDifusa * mat_difuso;
     //Reflejo Especular
     vec3 dirReflejo = reflect(-dirLuz, normal);
-    vec3 ilumEspecular = luzSpot.color.especular * pow(max(dot(dirVista, dirReflejo), 0.0), mat_brillo);
+    vec3 ilumEspecular = luzFocal.color.especular * pow(max(dot(dirVista, dirReflejo), 0.0), mat_brillo);
     ilumEspecular *= atenuacion * intensidad;
     vec3 reflejoEspecular = ilumEspecular * mat_especular;
     // Sumando los reflejos: ambiente + difuso + especular

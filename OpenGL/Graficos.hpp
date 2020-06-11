@@ -8,6 +8,9 @@
 #include <iostream>
 #include <unordered_map>
 #include <stb_image.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <json/json.h>
@@ -70,12 +73,12 @@ namespace ComputacionGrafica {
 		InfoLuzPuntual(vec3 posicion, ColorLuz color, InfoConstAtenuacion* constAtenuacion)
 			: InfoLuz("Puntual", color), posicion(posicion), constAtenuacion(constAtenuacion) { }
 	};
-	typedef struct InfoLuzSpot : InfoLuz {
+	typedef struct InfoLuzFocal : InfoLuz {
 		vec3 posicion, direccion;
 		InfoConstAtenuacion* constAtenuacion;
 		float anguloInterno, anguloExterno;
-		InfoLuzSpot(vec3 posicion, vec3 direccion, ColorLuz color, InfoConstAtenuacion* constAtenuacion, float anguloInterno, float anguloExterno)
-			: InfoLuz("Spot", color), posicion(posicion), direccion(direccion), constAtenuacion(constAtenuacion), anguloInterno(anguloInterno), anguloExterno(anguloExterno) { }
+		InfoLuzFocal(vec3 posicion, vec3 direccion, ColorLuz color, InfoConstAtenuacion* constAtenuacion, float anguloInterno, float anguloExterno)
+			: InfoLuz("Focal", color), posicion(posicion), direccion(direccion), constAtenuacion(constAtenuacion), anguloInterno(anguloInterno), anguloExterno(anguloExterno) { }
 	};
 
 	class CInfoConstantes {
@@ -622,13 +625,13 @@ namespace ComputacionGrafica {
 			}
 		}
 	};
-	class CGraficoLuzSpot : public CGraficoLuz {
+	class CGraficoLuzFocal : public CGraficoLuz {
 		vec3 posicion, direccion;
 		InfoConstAtenuacion* constantesAtenuacion;
 		float anguloInterno, anguloExterno;
 	public:
-		CGraficoLuzSpot(string nombre, string nombreArchivo, InfoConstAtenuacion* constantesDistancia, float anguloInterno, float anguloExterno, ColorLuz color)
-			: CGraficoLuz(nombre, nombreArchivo, "Spot", color) {
+		CGraficoLuzFocal(string nombre, string nombreArchivo, InfoConstAtenuacion* constantesDistancia, float anguloInterno, float anguloExterno, ColorLuz color)
+			: CGraficoLuz(nombre, nombreArchivo, "Focal", color) {
 			this->constantesAtenuacion = constantesDistancia;
 			this->anguloInterno = anguloInterno;
 			this->anguloExterno = anguloExterno;
@@ -641,7 +644,7 @@ namespace ComputacionGrafica {
 		}
 		void getInfoLuces(vector<InfoLuz*> &infoLuces) {
 			for (CModelado* modelado : this->modelados) {
-				InfoLuz* infoLuz = new InfoLuzSpot(this->posicion, this->direccion, this->color, this->constantesAtenuacion, this->anguloInterno, this->anguloExterno);
+				InfoLuz* infoLuz = new InfoLuzFocal(this->posicion, this->direccion, this->color, this->constantesAtenuacion, this->anguloInterno, this->anguloExterno);
 				infoLuces.push_back(infoLuz);
 			}
 		}
@@ -695,17 +698,17 @@ namespace ComputacionGrafica {
 					modelado->progShaders->setFloat("luzPuntual.constAtenuacion.linear"    , ((InfoLuzPuntual*)infoLuz)->constAtenuacion->linear    );
 					modelado->progShaders->setFloat("luzPuntual.constAtenuacion.cuadratica", ((InfoLuzPuntual*)infoLuz)->constAtenuacion->cuadratica);
 				}
-				else if (infoLuz->tipo == "Spot") {
-					modelado->progShaders->setVec3("luzSpot.posicion"                   , ((InfoLuzSpot*)infoLuz)->posicion);
-					modelado->progShaders->setVec3("luzSpot.direccion"                  , ((InfoLuzSpot*)infoLuz)->direccion);
-					modelado->progShaders->setVec3("luzSpot.color.ambiente"             , ((InfoLuzSpot*)infoLuz)->color.ambiente);
-					modelado->progShaders->setVec3("luzSpot.color.especular"            , ((InfoLuzSpot*)infoLuz)->color.especular);
-					modelado->progShaders->setVec3("luzSpot.color.difuso"               , ((InfoLuzSpot*)infoLuz)->color.difuso);
-					modelado->progShaders->setFloat("luzSpot.constAtenuacion.constante" , ((InfoLuzSpot*)infoLuz)->constAtenuacion->constante);
-					modelado->progShaders->setFloat("luzSpot.constAtenuacion.linear"    , ((InfoLuzSpot*)infoLuz)->constAtenuacion->linear);
-					modelado->progShaders->setFloat("luzSpot.constAtenuacion.cuadratica", ((InfoLuzSpot*)infoLuz)->constAtenuacion->cuadratica);
-					modelado->progShaders->setFloat("luzSpot.anguloInterno"             , ((InfoLuzSpot*)infoLuz)->anguloInterno);
-					modelado->progShaders->setFloat("luzSpot.anguloExterno"             , ((InfoLuzSpot*)infoLuz)->anguloExterno);
+				else if (infoLuz->tipo == "Focal") {
+					modelado->progShaders->setVec3("luzFocal.posicion"                   , ((InfoLuzFocal*)infoLuz)->posicion);
+					modelado->progShaders->setVec3("luzFocal.direccion"                  , ((InfoLuzFocal*)infoLuz)->direccion);
+					modelado->progShaders->setVec3("luzFocal.color.ambiente"             , ((InfoLuzFocal*)infoLuz)->color.ambiente);
+					modelado->progShaders->setVec3("luzFocal.color.especular"            , ((InfoLuzFocal*)infoLuz)->color.especular);
+					modelado->progShaders->setVec3("luzFocal.color.difuso"               , ((InfoLuzFocal*)infoLuz)->color.difuso);
+					modelado->progShaders->setFloat("luzFocal.constAtenuacion.constante" , ((InfoLuzFocal*)infoLuz)->constAtenuacion->constante);
+					modelado->progShaders->setFloat("luzFocal.constAtenuacion.linear"    , ((InfoLuzFocal*)infoLuz)->constAtenuacion->linear);
+					modelado->progShaders->setFloat("luzFocal.constAtenuacion.cuadratica", ((InfoLuzFocal*)infoLuz)->constAtenuacion->cuadratica);
+					modelado->progShaders->setFloat("luzFocal.anguloInterno"             , ((InfoLuzFocal*)infoLuz)->anguloInterno);
+					modelado->progShaders->setFloat("luzFocal.anguloExterno"             , ((InfoLuzFocal*)infoLuz)->anguloExterno);
 				}
 			}
 		}
@@ -900,11 +903,11 @@ namespace ComputacionGrafica {
 						short distancia = (short)detalleLuz["DistAtenuacion"].asInt();
 						grafico = new CGraficoLuzPuntual(nombreObjeto, archivoOFF, this->infoConstantes->getInfoConstAtenuacion(distancia), color);
 					}
-					else if (tipo == "Spot") {
+					else if (tipo == "Focal") {
 						short distancia = (short)detalleLuz["DistAtenuacion"].asInt();
 						float anguloInterno = cos(radians(detalleLuz["AnguloInterno"].asFloat()));
 						float anguloExterno = cos(radians(detalleLuz["AnguloExterno"].asFloat()));
-						grafico = new CGraficoLuzSpot(nombreObjeto, archivoOFF, this->infoConstantes->getInfoConstAtenuacion(distancia), anguloInterno, anguloExterno, color);
+						grafico = new CGraficoLuzFocal(nombreObjeto, archivoOFF, this->infoConstantes->getInfoConstAtenuacion(distancia), anguloInterno, anguloExterno, color);
 					}
 					this->graficosLuz.push_back((CGraficoLuz*)grafico);
 				}
@@ -963,9 +966,9 @@ namespace ComputacionGrafica {
 			/**********************Info Luz************************/
 			vector<InfoLuz*> infoLuces;
 			for (CGraficoLuz* grafico : this->graficosLuz) {
-				if (grafico->getTipo() == "Spot") {
-					((CGraficoLuzSpot*)grafico)->setPosicion(this->camara->getPosicion());//Podríamos indicar la posición internamente, como en el caso de la luz puntual
-					((CGraficoLuzSpot*)grafico)->setDireccion(this->camara->getFrente());
+				if (grafico->getTipo() == "Focal") {
+					((CGraficoLuzFocal*)grafico)->setPosicion(this->camara->getPosicion());//Podríamos indicar la posición internamente, como en el caso de la luz puntual
+					((CGraficoLuzFocal*)grafico)->setDireccion(this->camara->getFrente());
 				}
 				grafico->getInfoLuces(infoLuces);
 			}

@@ -126,7 +126,7 @@
       "Nombre": "Luz",
       "Archivo": "OFF/cubo.off",
       "Luz": true,
-      "Tipo": "Spot",
+      "Tipo": "Focal",
       "DetalleLuz": {
         "DistAtenuacion": 50,
         "AnguloInterno": 1,
